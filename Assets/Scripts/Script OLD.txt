@@ -1,0 +1,67 @@
+using System.Collections.Generic;
+using Unity.Collections;
+using Unity.Entities;
+using Unity.Mathematics;
+using Unity.Transforms;
+using UnityEngine;
+
+public class BulletSpawnerSystem : MonoBehaviour
+{
+    public GameObject bulletPrefab;
+
+    EntityManager entityManager;
+
+    BlobAssetStore blob;
+    Entity bulletEntity;
+    NativeArray<Entity> bulletArray;
+    [Space]
+    public int spawnCount = 100;
+    public float entityLifeTime = 15f;
+    [Space]
+    public float shootRate = 0.45f;
+    float currentTime;
+
+    private void Start()
+    {
+        entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        blob = new BlobAssetStore();
+
+        GameObjectConversionSettings settings = GameObjectConversionSettings.FromWorld(World.DefaultGameObjectInjectionWorld, blob);
+        bulletEntity = GameObjectConversionUtility.ConvertGameObjectHierarchy(bulletPrefab, settings);
+
+        bulletArray = new NativeArray<Entity>(100, Allocator.Persistent);
+    }
+
+    private void Update()
+    {
+        if ( false && Input.GetMouseButton(0))
+        {
+            if (currentTime >= shootRate)
+            {
+                Entity bulletEntityCopy = entityManager.Instantiate(bulletEntity);
+
+                float3 shipPosition = new float3(gameObject.transform);
+                Quaternion shipRotation = new Quaternion();
+
+                shipRotation = new Quaternion(transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w);
+
+                float3 moveDirection = new float3(shipPosition + math.mul(shipRotation, new float3(0,0,3f)));
+
+                entityManager.SetComponentData(bulletEntityCopy, new MoveData { moveDircetion = moveDirection, moveSpeed = 10f });
+
+                currentTime = 0;
+            }
+            else
+            {
+                currentTime += Time.deltaTime;
+            }
+            
+        }
+    }
+
+    private void OnDestroy()
+    {
+        bulletArray.Dispose();
+        blob.Dispose();
+    }
+}
