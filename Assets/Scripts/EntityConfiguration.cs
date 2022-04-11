@@ -58,14 +58,10 @@ public class EntityConfiguration : MonoBehaviour, IDeclareReferencedPrefabs, ICo
         blob = new BlobAssetStore();
         rockType = RockType.small;
 
-       // if (rockPrefab1) Debug.Log("rockPrefab1 is true");
-
         World rockWorld = new World("AsteroidSubScene", WorldFlags.Game);
 
         GameObjectConversionSettings settings = GameObjectConversionSettings.FromWorld(World.DefaultGameObjectInjectionWorld, blob);
         enemyEntityPrefab = GameObjectConversionUtility.ConvertGameObjectHierarchy(rockPrefab1, settings);
-
-        //if (enemyEntityPrefab != null) Debug.Log("enemyEntityPrefab is NOT Null");
 
         enemyArray = new NativeArray<Entity>(spawnCount, Allocator.Persistent);
 
@@ -74,18 +70,15 @@ public class EntityConfiguration : MonoBehaviour, IDeclareReferencedPrefabs, ICo
 
     IEnumerator SpawnEntity()
     {
-        //Debug.Log("StartCoroutine(SpawnEntity()) called!");
         yield return new WaitForSeconds(0.5f);
 
         if (spawnIndex < enemyArray.Length)
         {
-            //Debug.Log("spawnIndex is NOT the same lenght as enemyArray.");
             StartCoroutine(SpawnEntity());
             SpawnEntity(spawnIndex);
         }
         if (spawnIndex == enemyArray.Length)
         {
-            //Debug.Log("spawnIndex IS the same lenght as enemyArray.");
             enemyArray.Dispose();
             StopAllCoroutines();
             spawnCount += 10;
@@ -102,14 +95,12 @@ public class EntityConfiguration : MonoBehaviour, IDeclareReferencedPrefabs, ICo
 
     void SpawnEntity(int entityIndex)
     {
-        //Debug.Log("SpawnEntity() called");
         entityManager.SetEnabled(enemyArray[entityIndex], true);
         spawnIndex++;
     }
 
     void SpawnWave()
     {
-        //Debug.Log("SpawnWave() called");
         Vector3[] rockPositions = new Vector3[enemyArray.Length];
 
         for (int i = 0; i < enemyArray.Length; i++)
@@ -122,7 +113,6 @@ public class EntityConfiguration : MonoBehaviour, IDeclareReferencedPrefabs, ICo
             z += UnityEngine.Random.Range(-5f, 5f);
 
             rockPositions[i] = new Vector3(x, 0, z);
-            //Debug.Log("X spawn point: " + x + " Z Spawn Point: " + z);
         }
 
         for (int i = 0; i < enemyArray.Length; i++)
@@ -138,17 +128,12 @@ public class EntityConfiguration : MonoBehaviour, IDeclareReferencedPrefabs, ICo
             entityManager.SetComponentData(enemyArray[i], new Translation { Value = rockSpawnPos });
 
             Translation rockPosition = entityManager.GetComponentData<Translation>(enemyArray[i]);
-
             float3 newRockDirection = new float3(rockPosition.Value.x, 0, rockPosition.Value.z) - new float3(0,0,0);
-
             newRockDirection += (float3)rockTarget;
 
             entityManager.SetComponentData(enemyArray[i], new MoveData { moveDircetion = newRockDirection, moveSpeed = UnityEngine.Random.Range(5f, 60f) });
-
             entityManager.SetComponentData(enemyArray[i], new LifeTimeData { maxTime = entityLifeTime });
-
             entityManager.SetComponentData(enemyArray[i], new RotationData { turnSpeed = UnityEngine.Random.Range(-2f, 2f)});
-
             entityManager.SetEnabled(enemyArray[i], false);
         }
 
